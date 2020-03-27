@@ -1,0 +1,100 @@
+dependency
+
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-jdk8</artifactId>
+            <version>1.3.1.Final</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.3.1.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        
+       ModelDTO
+       public class ModelDTO {
+
+    @ApiModelProperty(required = false, hidden = true)
+    private Long modeltId;
+
+    @ApiModelProperty(required = true, hidden = false)
+    private String modelName;
+
+    @ApiModelProperty(required = true, hidden = false)
+    private String modelAge;
+
+    @ApiModelProperty(required = false, hidden = true)
+    private String modelFileName;
+
+    @ApiModelProperty(required = false, hidden = true)
+    private String modelFileType;
+
+    @ApiModelProperty(required = false, hidden = true)
+    @JsonIgnore
+    private byte[] modelFile;
+
+    @ApiModelProperty(required = true, hidden = false)
+    private String modelFamily;
+
+    @ApiModelProperty(required = true, hidden = false)
+    private String modelPhone;
+
+getter and setter
+
+
+create mapper interface
+
+@Mapper(componentModel = "spring")
+public interface ModelMapper {
+
+    @Mapping(source = "idModel", target = "modeltId")
+    @Mapping(source = "fileName", target = "modelFileName")
+    @Mapping(source = "family", target = "modelFamily")
+    @Mapping(source = "phoneNumber", target = "modelPhone")
+    @Mapping(source = "fileType", target = "modelFileType")
+    @Mapping(source = "name", target = "fileName")
+    @Mapping(source = "age", target = "studentAge", qualifiedByName = "convertToStringAge")
+    @Mapping(source = "file", target = "modelFile")
+    ModelDTO toModelDTO(Model model);
+
+
+    @Mapping(source = "modeltId", target = "idModel")
+    @Mapping(source = "modelFileType", target = "fileName")
+    @Mapping(source = "modelFileName", target = "fileType")
+    @Mapping(source = "modelName", target = "name")
+    @Mapping(source = "modelAge", target = "age", qualifiedByName = "convertToIntegerAge")
+    @Mapping(source = "modelImage", target = "file")
+    @Mapping(source = "modelFamily", target = "family")
+    @Mapping(source = "modelPhone", target = "phoneNumber")
+    Model toModelEntity(ModelDTO modelDTO);
+
+    List<ModelDTO> toModelsDTO(Page<Model> modelList);
+
+    List<ModelDTO> toModelsDTO(List<Model> modelList);
+
+    @Named("convertToIntegerAge")
+    default int convertToIntegerAge(String age) {
+        return Integer.parseInt(age);
+    }
+
+
+    @Named("convertToStringAge")
+    default String convertToStringAge(int age) {
+        return String.valueOf(age);
+    }
+
+use it
+    @PostMapping("/updateModel/{id}")
+    public String updateModel(@RequestBody @Valid ModelDTO modelDTO, @PathVariable("id") Long id) {
+        return modelService.updateModel(id, modelMapper.toModelEntity(modelDTO));
+    }
+
+
+    @GetMapping("/getAll/{page}/{size}")
+    public List<ModelDTO> getAll(@PathVariable("page") int page, @PathVariable("size") int size) {
+        return modelMapper.toModelsDTO(modelService.getAll(page, size));
+    }
