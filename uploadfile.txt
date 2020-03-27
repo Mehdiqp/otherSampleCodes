@@ -1,0 +1,61 @@
+in model
+    @Column(name = "file_name")
+    private String fileNamw;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Lob
+    @Column(name = "file")
+
+    private byte[] file;
+    
+    
+    create model with file
+    
+    dependency
+    
+            <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+        
+        
+        model service
+        
+            public Model addModel(Model model, MultipartFile file) {
+
+        try {
+            model.setFileName(file.getOriginalFilename());
+            model.setFileType(file.getContentType());
+            model.setFile(IOUtils.toByteArray(file.getInputStream()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new SaveFileException(e.getMessage());
+        }
+
+        modelRepo.save(model);
+
+        return model;
+    }
+    
+        @PostMapping(value = "/addModelName")
+    public ResponseEntity<Void> addModel(@Valid ModelDTO modelDTO, @RequestPart("model_file") MultipartFile file) {
+        modelService.addModel(modelMapper.toModelEntity(modelDTO), file);
+        return ResponseEntity.status(HttpsURLConnection.HTTP_CREATED).build();
+    }
+    
+    download file with model id
+    
+        @GetMapping(value = "/getModelProfileImage/{id}")
+    public ResponseEntity<ByteArrayResource> getModelFile(@PathVariable("id") Long id) {
+        Model model = modelService.getFile(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(model.getFileType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFileName() + "\"")
+                .body(new ByteArrayResource(model.getFile()));
+    }
+    
+    
