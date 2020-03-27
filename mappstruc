@@ -57,7 +57,7 @@ public interface ModelMapper {
     @Mapping(source = "phoneNumber", target = "modelPhone")
     @Mapping(source = "fileType", target = "modelFileType")
     @Mapping(source = "name", target = "fileName")
-    @Mapping(source = "age", target = "studentAge", qualifiedByName = "convertToStringAge")
+    @Mapping(source = "age", target = "modelAge", qualifiedByName = "convertToStringAge")
     @Mapping(source = "file", target = "modelFile")
     ModelDTO toModelDTO(Model model);
 
